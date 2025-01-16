@@ -46,7 +46,7 @@ $(GHQ): $(GO) $(HOME)/.local/bin
 
 $(TPM): $(TMUX) $(GIT) $(HOME)/.config
 	mkdir -p $(HOME)/.config/tmux/plugins
-	$(GIT) clone https://github.com/tmux-plugins/tpm.git $(shell dirname $(TPM))
+	if ! [ -d $(TPM)/.git ]; then $(GIT) clone https://github.com/tmux-plugins/tpm.git $(TPM); fi
 
 $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 	$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz
