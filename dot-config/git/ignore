@@ -1,0 +1,16 @@
+.direnv/
+.envrc
+.DS_Store
+[Tt]humbs.db
+*.sw[nop]
+*.sqlite3
+*.pyc
+*.egg-info
+.eggs/
+__pycache__/
+.pytest_cache
+.mypy_cache
+*.log
+tmp/
+
+# vim: ft=gitignore

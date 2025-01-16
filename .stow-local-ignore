@@ -1,0 +1,26 @@
+# Default GNU Stow ignore
+RCS
+.+,v
+
+CVS
+\.\#.+          # CVS conflict files / emacs lock files
+\.cvsignore
+
+\.svn
+_darcs
+\.hg
+
+\.git
+\.git.+
+
+.+~             # emacs backup files
+\#.*\#          # emacs autosave files
+
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+# Customizations
+.ruby-lsp
+Makefile
+first-setup.sh

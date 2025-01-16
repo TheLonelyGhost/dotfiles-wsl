@@ -1,0 +1,94 @@
+.DEFAULT_GOAL := apply
+
+AWK := /usr/bin/awk
+CURL := /usr/bin/curl
+GO := /usr/local/go/bin/go
+GHQ := ~/.local/bin/ghq
+GIT := /usr/bin/git
+GPG := /usr/bin/gpg
+INSTALL := /usr/bin/install
+SSHKEYGEN := /usr/bin/ssh-keygen
+STOW := /usr/bin/stow
+STARSHIP := ~/.local/bin/starship
+TAR := /usr/bin/tar
+TMUX := /usr/bin/tmux
+TPM := ~/.config/tmux/plugins/tpm
+VIM := /usr/bin/nvim
+ZSH := /usr/bin/zsh
+
+GO_VERSION := 1.23.4
+STARSHIP_VERION := 1.22.1
+
+##### SETUP FOLDERS
+
+~/.local/bin:
+	mkdir -p -m0755 ~/.local/bin
+
+~/.config:
+	mkdir -p -m0755 ~/.config
+
+~/.gnupg:
+	mkdir -p -m0700 ~/.gnupg
+
+~/.ssh:
+	mkdir -p -m0755 ~/.ssh
+
+##### INSTALL TOOLS
+
+$(GO):
+	curl -SsLo /tmp/go.tgz https://go.dev/dl/go$(GO_VERSION).linux-amd64.tar.gz
+	sudo tar -xz -C /usr/local /tmp/go.tgz
+	rm /tmp/go.tgz
+
+$(GHQ): $(GO) ~/.local/bin
+	$(GO) install github.com/x-motemen/ghq@latest
+	$(INSTALL) -m0755 ~/go/bin/ghq ~/.local/bin/
+
+$(TPM): $(TMUX) $(GIT) ~/.config
+	mkdir -p ~/.config/tmux/plugins
+	$(GIT) clone https://github.com/tmux-plugins/tpm.git ~/.config/tmux/plugins/tpm
+
+$(STARSHIP): ~/.local/bin $(CURL) $(TAR) $(INSTALL)
+	$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz
+	mkdir -p /tmp/starship
+	$(TAR) -xz -C /tmp/starship -f /tmp/starship.tgz
+	$(INSTALL) -m0755 /tmp/starship/starship ~/.local/bin/starship
+	rm -rf /tmp/starship /tmp/starship.tgz
+
+$(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH):
+	sudo apt-get update -y
+	sudo apt-get install -y build-essential curl gawk git gnupg man-db neovim openssh-client stow tmux zsh
+
+##### CONFIGURE SOFTWARE
+
+.PHONY: ssh
+ssh: ~/.ssh $(SSHKEYGEN)
+	if ! [ -e ~/.ssh/id_ed25519 ]; then $(SSHKEYGEN) -t ed25519; fi
+
+.PHONY: gpg
+gpg: ~/.gnupg $(GPG)
+	if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then $(GPG) --full-generate-key; fi
+
+.PHONY: tmux
+tmux: $(TPM) $(GIT)
+	$(TPM)/scripts/install_plugins.sh
+
+.PHONY: vim
+vim: $(VIM)
+	@true
+
+.PHONY: zsh
+zsh: $(AWK) $(ZSH)
+	if getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then chsh -s $(ZSH); fi
+
+##### SYMLINK DOTFILES
+
+.PHONY: stow
+stow: $(STOW) $(GIT) ~/.local/bin/starship ~/.config ~/.gnupg $(TPM)
+	$(STOW) --restow --dotfiles .
+	$(GIT) config --global user.name 'David Alexander'
+	if [ -n "$(EMAIL)" ]; then $(GIT) config --global user.email $(EMAIL); fi
+
+.PHONY: apply
+apply: stow gpg ssh tmux vim zsh $(GHQ)
+	if [ -z "$(EMAIL)" ]; then printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'
