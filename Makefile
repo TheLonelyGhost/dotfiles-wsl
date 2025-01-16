@@ -91,4 +91,4 @@ stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 
 .PHONY: apply
 apply: stow gpg ssh tmux vim zsh $(GHQ)
-	if [ -z "$(EMAIL)" ]; then printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'
+	if [ -z "$(EMAIL)" ]; then printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; fi
