@@ -40,4 +40,32 @@ zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
 alias ls='command ls --classify --human-readable --hide-control-chars --quoting-style=shell --color=auto'
 
+
+#================================#
+# === BEGIN RIG BOOTSTRAPPER === #
+
+function rig() {
+  __rig-clear
+  command rig "$@"
+  source "${RIG_ALIAS_FILE:-/tmp/rig-aliases}"
+}
+function __rig-clear() {
+  local alias_count
+  if [ -e "${RIG_ALIAS_FILE}.count" ]; then
+	alias_count="$(cat "${RIG_ALIAS_FILE}.count")"
+  fi
+  if [ "$alias_count" -eq 0 ]; then return 0; fi
+
+  for i in $(seq $alias_count); do
+    unalias "${RIG_ALIAS_PREFIX}${i}"
+  done
+
+  echo 0 > "${RIG_ALIAS_FILE}.count"
+}
+: "${RIG_ALIAS_PREFIX:=e}"
+: "${RIG_ALIAS_FILE:=/tmp/rig-aliases}"
+
+# ==== END RIG BOOTSTRAPPER ==== #
+#================================#
+
 # vim: ft=zsh

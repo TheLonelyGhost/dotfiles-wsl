@@ -7,6 +7,8 @@ GHQ := $(HOME)/.local/bin/ghq
 GIT := /usr/bin/git
 GPG := /usr/bin/gpg
 INSTALL := /usr/bin/install
+RIG := $(HOME)/.local/bin/rig
+RIPGREP := /usr/bin/rg
 SSHKEYGEN := /usr/bin/ssh-keygen
 STOW := /usr/bin/stow
 STARSHIP := $(HOME)/.local/bin/starship
@@ -17,6 +19,7 @@ VIM := /usr/bin/nvim
 ZSH := /usr/bin/zsh
 
 GO_VERSION := 1.23.4
+RIG_VERSION := 1.0.0
 STARSHIP_VERSION := 1.22.1
 
 ##### SETUP FOLDERS
@@ -54,6 +57,13 @@ $(TPM): $(TMUX) $(GIT) $(HOME)/.config
 		$(GIT) clone https://github.com/tmux-plugins/tpm.git $(TPM); \
 	fi
 
+$(RIG): $(HOME)/.local/bin $(GIT) $(RIPGREP)
+	@if ! [ -x $(RIG) ]; then \
+		echo "Installing rig to $(RIG)"; \
+		$(CURL) -SsLo /tmp/rig https://github.com/TheLonelyGhost/rig/releases/download/v$(RIG_VERSION)/rig-linux-amd64; \
+		$(INSTALL) -m0755 /tmp/rig $(HOME)/.local/bin/; \
+	fi
+
 $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 	@if ! [ -x $(STARSHIP) ]; then \
 		echo "Installing starship to $(STARSHIP)"; \
@@ -64,9 +74,9 @@ $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 		rm -rf /tmp/starship /tmp/starship.tgz; \
 	fi
 
-$(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH):
+$(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH) $(RIPGREP):
 	sudo apt-get update -y
-	sudo apt-get install -y build-essential curl gawk git gnupg man-db neovim openssh-client stow tmux zsh
+	sudo apt-get install -y build-essential curl gawk git gnupg man-db neovim openssh-client ripgrep stow tmux zsh
 
 ##### CONFIGURE SOFTWARE
 
@@ -110,7 +120,7 @@ stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 	fi
 
 .PHONY: apply
-apply: stow gpg ssh tmux vim zsh $(GHQ)
+apply: stow gpg ssh tmux vim zsh $(GHQ) $(RIG)
 	@if [ -z "$(EMAIL)" ]; then \
 		printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; \
 	fi
