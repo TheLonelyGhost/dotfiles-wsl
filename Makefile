@@ -79,7 +79,7 @@ vim: $(VIM)
 
 .PHONY: zsh
 zsh: $(AWK) $(ZSH)
-	if getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then chsh -s $(ZSH); fi
+	if ! getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then chsh -s $(ZSH); fi
 
 ##### SYMLINK DOTFILES
 
