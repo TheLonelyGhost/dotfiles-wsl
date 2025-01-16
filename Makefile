@@ -72,7 +72,7 @@ $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMU
 
 .PHONY: ssh
 ssh: $(HOME)/.ssh $(SSHKEYGEN)
-	if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then \
+	@if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then \
 		echo "Generating default ed25519 SSH key into ~/.ssh directory"; \
 		$(SSHKEYGEN) -t ed25519; \
 	fi
