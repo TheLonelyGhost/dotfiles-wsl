@@ -17,7 +17,7 @@ VIM := /usr/bin/nvim
 ZSH := /usr/bin/zsh
 
 GO_VERSION := 1.23.4
-STARSHIP_VERION := 1.22.1
+STARSHIP_VERSION := 1.22.1
 
 ##### SETUP FOLDERS
 
