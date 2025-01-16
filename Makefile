@@ -41,19 +41,25 @@ $(GO):
 	rm /tmp/go.tgz
 
 $(GHQ): $(GO) $(HOME)/.local/bin
-	$(GO) install github.com/x-motemen/ghq@latest
-	$(INSTALL) -m0755 $(HOME)/go/bin/ghq $(HOME)/.local/bin/
+	@if ! [ -x $(GHQ) ]; then \
+		$(GO) install github.com/x-motemen/ghq@latest; \
+		$(INSTALL) -m0755 $(HOME)/go/bin/ghq $(HOME)/.local/bin/; \
+	fi
 
 $(TPM): $(TMUX) $(GIT) $(HOME)/.config
-	mkdir -p $(HOME)/.config/tmux/plugins
-	if ! [ -d $(TPM)/.git ]; then $(GIT) clone https://github.com/tmux-plugins/tpm.git $(TPM); fi
+	@if ! [ -d $(TPM) ]; then \
+		mkdir -p $(HOME)/.config/tmux/plugins; \
+		$(GIT) clone https://github.com/tmux-plugins/tpm.git $(TPM); \
+	fi
 
 $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
-	$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz
-	mkdir -p /tmp/starship
-	$(TAR) -xz -C /tmp/starship -f /tmp/starship.tgz
-	$(INSTALL) -m0755 /tmp/starship/starship $(HOME)/.local/bin/starship
-	rm -rf /tmp/starship /tmp/starship.tgz
+	@if ! [ -x $(STARSHIP) ]; then \
+		$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz; \
+		mkdir -p /tmp/starship; \
+		$(TAR) -xz -C /tmp/starship -f /tmp/starship.tgz; \
+		$(INSTALL) -m0755 /tmp/starship/starship $(HOME)/.local/bin/starship; \
+		rm -rf /tmp/starship /tmp/starship.tgz; \
+	fi
 
 $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH):
 	sudo apt-get update -y
@@ -63,11 +69,15 @@ $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMU
 
 .PHONY: ssh
 ssh: $(HOME)/.ssh $(SSHKEYGEN)
-	if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then $(SSHKEYGEN) -t ed25519; fi
+	if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then \
+		$(SSHKEYGEN) -t ed25519; \
+	fi
 
 .PHONY: gpg
 gpg: $(HOME)/.gnupg $(GPG)
-	if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then $(GPG) --full-generate-key; fi
+	if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then \
+		$(GPG) --full-generate-key; \
+	fi
 
 .PHONY: tmux
 tmux: $(TPM) $(GIT)
@@ -79,7 +89,9 @@ vim: $(VIM)
 
 .PHONY: zsh
 zsh: $(AWK) $(ZSH)
-	if ! getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then chsh -s $(ZSH); fi
+	@if ! getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then \
+		chsh -s $(ZSH); \
+	fi
 
 ##### SYMLINK DOTFILES
 
