@@ -112,7 +112,7 @@ zsh: $(AWK) $(ZSH)
 
 .PHONY: stow
 stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
-	$(STOW) --restow .
+	$(STOW) --restow --dotfiles .
 	$(GIT) config --global user.name 'David Alexander'
 	@if [ -n "$(EMAIL)" ]; then \
 		echo "$(GIT) config --global user.email $(EMAIL)"; \

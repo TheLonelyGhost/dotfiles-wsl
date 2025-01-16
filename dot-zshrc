@@ -57,7 +57,7 @@ function __rig-clear() {
   if [ "$alias_count" -eq 0 ]; then return 0; fi
 
   for i in $(seq $alias_count); do
-    unalias "${RIG_ALIAS_PREFIX}${i}"
+    unalias "${RIG_ALIAS_PREFIX}${i}" &>/dev/null
   done
 
   echo 0 > "${RIG_ALIAS_FILE}.count"
