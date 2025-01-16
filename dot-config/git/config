@@ -54,7 +54,7 @@
 	submoduleSummary = true
 
 [user]
-	name = "David Alexander"
-	email = "david.alexander@hashicorp.com"
+	name = David Alexander
+	email = david.alexander@hashicorp.com
 
 # vim: noexpandtab ts=2 sts=2 sw=2
