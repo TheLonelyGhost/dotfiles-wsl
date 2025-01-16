@@ -41,9 +41,12 @@ $(HOME)/.ssh:
 ##### INSTALL TOOLS
 
 $(DELTA): $(CURL)
-	$(CURL) -SsLo /tmp/git-delta.deb https://github.com/dandavison/delta/releases/download/$(DELTA_VERSION)/git-delta_$(DELTA_VERSION)_amd64.deb
-	sudo dpkg -i /tmp/git-delta.deb
-	rm -f /tmp/git-delta.deb
+	@if ! [ -x $(DELTA) ]; then \
+		echo "Installing git-delta to $(DELTA)"; \
+		$(CURL) -SsLo /tmp/git-delta.deb https://github.com/dandavison/delta/releases/download/$(DELTA_VERSION)/git-delta_$(DELTA_VERSION)_amd64.deb; \
+		sudo dpkg -i /tmp/git-delta.deb; \
+		rm -f /tmp/git-delta.deb; \
+	fi
 
 $(GO):
 	curl -SsLo /tmp/go.tgz https://go.dev/dl/go$(GO_VERSION).linux-amd64.tar.gz
