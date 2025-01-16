@@ -2,6 +2,7 @@
 
 AWK := /usr/bin/awk
 CURL := /usr/bin/curl
+DELTA := /usr/bin/delta
 GO := /usr/local/go/bin/go
 GHQ := $(HOME)/.local/bin/ghq
 GIT := /usr/bin/git
@@ -18,6 +19,7 @@ TPM := $(HOME)/.config/tmux/plugins/tpm
 VIM := /usr/bin/nvim
 ZSH := /usr/bin/zsh
 
+DELTA_VERSION := 0.18.2
 GO_VERSION := 1.23.4
 RIG_VERSION := 1.0.0
 STARSHIP_VERSION := 1.22.1
@@ -37,6 +39,11 @@ $(HOME)/.ssh:
 	mkdir -p -m0755 $(HOME)/.ssh
 
 ##### INSTALL TOOLS
+
+$(DELTA): $(CURL)
+	$(CURL) -SsLo /tmp/git-delta.deb https://github.com/dandavison/delta/releases/download/$(DELTA_VERSION)/git-delta_$(DELTA_VERSION)_amd64.deb
+	sudo dpkg -i /tmp/git-delta.deb
+	rm -f /tmp/git-delta.deb
 
 $(GO):
 	curl -SsLo /tmp/go.tgz https://go.dev/dl/go$(GO_VERSION).linux-amd64.tar.gz
@@ -120,7 +127,7 @@ stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 	fi
 
 .PHONY: apply
-apply: stow gpg ssh tmux vim zsh $(GHQ) $(RIG)
+apply: stow gpg ssh tmux vim zsh $(GHQ) $(RIG) $(DELTA)
 	@if [ -z "$(EMAIL)" ]; then \
 		printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; \
 	fi

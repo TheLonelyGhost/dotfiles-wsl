@@ -22,11 +22,23 @@
 [branch "main"]
 	rebase = true
 
+[core]
+	pager = delta
+
+[delta]
+	navigate = true # use n and N to move between diff sections
+
 [fetch]
 	prune = true
 
 [init]
 	defaultBranch = main
+
+[interactive]
+	diffFilter = delta --color-only
+
+[merge]
+	conflictstyle = zdiff3
 
 [pull]
 	rebase = true
