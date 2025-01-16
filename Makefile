@@ -3,16 +3,16 @@
 AWK := /usr/bin/awk
 CURL := /usr/bin/curl
 GO := /usr/local/go/bin/go
-GHQ := ~/.local/bin/ghq
+GHQ := $(HOME)/.local/bin/ghq
 GIT := /usr/bin/git
 GPG := /usr/bin/gpg
 INSTALL := /usr/bin/install
 SSHKEYGEN := /usr/bin/ssh-keygen
 STOW := /usr/bin/stow
-STARSHIP := ~/.local/bin/starship
+STARSHIP := $(HOME)/.local/bin/starship
 TAR := /usr/bin/tar
 TMUX := /usr/bin/tmux
-TPM := ~/.config/tmux/plugins/tpm
+TPM := $(HOME)/.config/tmux/plugins/tpm
 VIM := /usr/bin/nvim
 ZSH := /usr/bin/zsh
 
@@ -21,17 +21,17 @@ STARSHIP_VERSION := 1.22.1
 
 ##### SETUP FOLDERS
 
-~/.local/bin:
-	mkdir -p -m0755 ~/.local/bin
+$(HOME)/.local/bin:
+	mkdir -p -m0755 $(HOME)/.local/bin
 
-~/.config:
-	mkdir -p -m0755 ~/.config
+$(HOME)/.config:
+	mkdir -p -m0755 $(HOME)/.config
 
-~/.gnupg:
-	mkdir -p -m0700 ~/.gnupg
+$(HOME)/.gnupg:
+	mkdir -p -m0700 $(HOME)/.gnupg
 
-~/.ssh:
-	mkdir -p -m0755 ~/.ssh
+$(HOME)/.ssh:
+	mkdir -p -m0755 $(HOME)/.ssh
 
 ##### INSTALL TOOLS
 
@@ -40,19 +40,19 @@ $(GO):
 	sudo tar -xz -C /usr/local /tmp/go.tgz
 	rm /tmp/go.tgz
 
-$(GHQ): $(GO) ~/.local/bin
+$(GHQ): $(GO) $(HOME)/.local/bin
 	$(GO) install github.com/x-motemen/ghq@latest
-	$(INSTALL) -m0755 ~/go/bin/ghq ~/.local/bin/
+	$(INSTALL) -m0755 $(HOME)/go/bin/ghq $(HOME)/.local/bin/
 
-$(TPM): $(TMUX) $(GIT) ~/.config
-	mkdir -p ~/.config/tmux/plugins
-	$(GIT) clone https://github.com/tmux-plugins/tpm.git ~/.config/tmux/plugins/tpm
+$(TPM): $(TMUX) $(GIT) $(HOME)/.config
+	mkdir -p $(HOME)/.config/tmux/plugins
+	$(GIT) clone https://github.com/tmux-plugins/tpm.git $(shell dirname $(TPM))
 
-$(STARSHIP): ~/.local/bin $(CURL) $(TAR) $(INSTALL)
+$(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 	$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz
 	mkdir -p /tmp/starship
 	$(TAR) -xz -C /tmp/starship -f /tmp/starship.tgz
-	$(INSTALL) -m0755 /tmp/starship/starship ~/.local/bin/starship
+	$(INSTALL) -m0755 /tmp/starship/starship $(HOME)/.local/bin/starship
 	rm -rf /tmp/starship /tmp/starship.tgz
 
 $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH):
@@ -62,11 +62,11 @@ $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMU
 ##### CONFIGURE SOFTWARE
 
 .PHONY: ssh
-ssh: ~/.ssh $(SSHKEYGEN)
-	if ! [ -e ~/.ssh/id_ed25519 ]; then $(SSHKEYGEN) -t ed25519; fi
+ssh: $(HOME)/.ssh $(SSHKEYGEN)
+	if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then $(SSHKEYGEN) -t ed25519; fi
 
 .PHONY: gpg
-gpg: ~/.gnupg $(GPG)
+gpg: $(HOME)/.gnupg $(GPG)
 	if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then $(GPG) --full-generate-key; fi
 
 .PHONY: tmux
@@ -84,7 +84,7 @@ zsh: $(AWK) $(ZSH)
 ##### SYMLINK DOTFILES
 
 .PHONY: stow
-stow: $(STOW) $(GIT) ~/.local/bin/starship ~/.config ~/.gnupg $(TPM)
+stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 	$(STOW) --restow --dotfiles .
 	$(GIT) config --global user.name 'David Alexander'
 	if [ -n "$(EMAIL)" ]; then $(GIT) config --global user.email $(EMAIL); fi
