@@ -42,18 +42,21 @@ $(GO):
 
 $(GHQ): $(GO) $(HOME)/.local/bin
 	@if ! [ -x $(GHQ) ]; then \
+		echo "Installing ghq to $(GHQ)"; \
 		$(GO) install github.com/x-motemen/ghq@latest; \
 		$(INSTALL) -m0755 $(HOME)/go/bin/ghq $(HOME)/.local/bin/; \
 	fi
 
 $(TPM): $(TMUX) $(GIT) $(HOME)/.config
 	@if ! [ -d $(TPM) ]; then \
+		echo "Installing tmux plugin manager to $(TPM)"; \
 		mkdir -p $(HOME)/.config/tmux/plugins; \
 		$(GIT) clone https://github.com/tmux-plugins/tpm.git $(TPM); \
 	fi
 
 $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 	@if ! [ -x $(STARSHIP) ]; then \
+		echo "Installing starship to $(STARSHIP)"; \
 		$(CURL) -SsLo /tmp/starship.tgz https://github.com/starship/starship/releases/download/v$(STARSHIP_VERSION)/starship-x86_64-unknown-linux-musl.tar.gz; \
 		mkdir -p /tmp/starship; \
 		$(TAR) -xz -C /tmp/starship -f /tmp/starship.tgz; \
@@ -70,12 +73,14 @@ $(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMU
 .PHONY: ssh
 ssh: $(HOME)/.ssh $(SSHKEYGEN)
 	if ! [ -e $(HOME)/.ssh/id_ed25519 ]; then \
+		echo "Generating default ed25519 SSH key into ~/.ssh directory"; \
 		$(SSHKEYGEN) -t ed25519; \
 	fi
 
 .PHONY: gpg
 gpg: $(HOME)/.gnupg $(GPG)
-	if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then \
+	@if [ -n "$(EMAIL)" ] && ! $(GPG) --list-secret-keys $(EMAIL) | grep -qFe '$(EMAIL)' >/dev/null 2>&1; then \
+		echo "Generating GPG private key for $(EMAIL)"; \
 		$(GPG) --full-generate-key; \
 	fi
 
@@ -99,8 +104,13 @@ zsh: $(AWK) $(ZSH)
 stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 	$(STOW) --restow .
 	$(GIT) config --global user.name 'David Alexander'
-	if [ -n "$(EMAIL)" ]; then $(GIT) config --global user.email $(EMAIL); fi
+	@if [ -n "$(EMAIL)" ]; then \
+		echo "$(GIT) config --global user.email $(EMAIL)"; \
+		$(GIT) config --global user.email $(EMAIL); \
+	fi
 
 .PHONY: apply
 apply: stow gpg ssh tmux vim zsh $(GHQ)
-	if [ -z "$(EMAIL)" ]; then printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; fi
+	@if [ -z "$(EMAIL)" ]; then \
+		printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; \
+	fi
