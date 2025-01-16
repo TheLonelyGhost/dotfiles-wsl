@@ -71,7 +71,7 @@ gpg: $(HOME)/.gnupg $(GPG)
 
 .PHONY: tmux
 tmux: $(TPM) $(GIT)
-	$(TPM)/scripts/install_plugins.sh
+	env TMUX='' $(TMUX) new-session $(TPM)/scripts/install_plugins.sh
 
 .PHONY: vim
 vim: $(VIM)
