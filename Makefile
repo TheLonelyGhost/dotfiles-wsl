@@ -14,8 +14,11 @@ SSHKEYGEN := /usr/bin/ssh-keygen
 STOW := /usr/bin/stow
 STARSHIP := $(HOME)/.local/bin/starship
 TAR := /usr/bin/tar
+TERRAFORM := $(HOME)/.local/bin/terraform
 TMUX := /usr/bin/tmux
 TPM := $(HOME)/.config/tmux/plugins/tpm
+UNZIP := /usr/bin/unzip
+VAULT := $(HOME)/.local/bin/vault
 VIM := /usr/bin/nvim
 ZSH := /usr/bin/zsh
 
@@ -23,6 +26,8 @@ DELTA_VERSION := 0.18.2
 GO_VERSION := 1.23.4
 RIG_VERSION := 1.0.0
 STARSHIP_VERSION := 1.22.1
+TERRAFORM_VERSION := 1.10.5
+VAULT_VERSION := 1.18.3
 
 ##### SETUP FOLDERS
 
@@ -84,9 +89,34 @@ $(STARSHIP): $(HOME)/.local/bin $(CURL) $(TAR) $(INSTALL)
 		rm -rf /tmp/starship /tmp/starship.tgz; \
 	fi
 
-$(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(VIM) $(ZSH) $(RIPGREP):
+$(TERRAFORM): $(HOME)/.local/bin $(CURL) $(UNZIP) $(INSTALL)
+	@if ! [ -x $(TERRAFORM) ]; then \
+		echo "Installing terraform to $(TERRAFORM)"; \
+		$(CURL) -SsLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/$(TERRAFORM_VERSION)/terraform_$(TERRAFORM_VERSION)_linux_amd64.zip; \
+		mkdir -p /tmp/terraform; \
+		cd /tmp/terraform; \
+		$(UNZIP) /tmp/terraform.zip; \
+		install -m0755 ./terraform $(TERRAFORM); \
+		cd -; \
+		rm -rf /tmp/terraform{,.zip}; \
+	fi
+
+$(VAULT): $(HOME)/.local/bin $(CURL) $(UNZIP) $(INSTALL)
+	@if ! [ -x $(VAULT) ]; then \
+		echo "Installing vault to $(VAULT)"; \
+		$(CURL) -SsLo /tmp/vault.zip https://releases.hashicorp.com/vault/$(VAULT_VERSION)/vault_$(VAULT_VERSION)_linux_amd64.zip; \
+		mkdir -p /tmp/vault; \
+		cd /tmp/vault; \
+		$(UNZIP) /tmp/vault.zip; \
+		install -m0755 ./vault $(VAULT); \
+		cd -; \
+		rm -rf /tmp/vault{,.zip}; \
+	fi
+
+$(AWK) $(CURL) $(GIT) $(GPG) $(INSTALL) $(MAN) $(SSHKEYGEN) $(STOW) $(TAR) $(TMUX) $(UNZIP) $(VIM) $(ZSH) $(RIPGREP):
 	sudo apt-get update -y
 	sudo apt-get install -y build-essential curl gawk git gnupg man-db neovim openssh-client ripgrep stow tmux zsh
+	sudo apt-get install -y python3-venv unzip nodejs npm ruby-dev
 
 ##### CONFIGURE SOFTWARE
 
@@ -112,6 +142,14 @@ tmux: $(TPM) $(GIT)
 vim: $(VIM)
 	@true
 
+.PHONY: terraform
+terraform: $(TERRAFORM)
+	@true
+
+.PHONY: vault
+vault: $(VAULT)
+	@true
+
 .PHONY: zsh
 zsh: $(AWK) $(ZSH)
 	@if ! getent passwd $(USER) | $(AWK) -F: '{ print $$NF }' | grep -qFe "$(ZSH)" >/dev/null 2>&1; then \
@@ -130,7 +168,7 @@ stow: $(STOW) $(GIT) $(STARSHIP) $(HOME)/.config $(HOME)/.gnupg $(TPM)
 	fi
 
 .PHONY: apply
-apply: stow gpg ssh tmux vim zsh $(GHQ) $(RIG) $(DELTA)
+apply: stow gpg ssh tmux vim zsh $(GHQ) $(RIG) $(DELTA) terraform vault
 	@if [ -z "$(EMAIL)" ]; then \
 		printf 'ERROR: Missing the EMAIL flag. Repeat this command with `EMAIL=<your-email>` passed to `make` to complete the configuration.\n'; \
 	fi
